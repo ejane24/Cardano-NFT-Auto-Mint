@@ -4,6 +4,12 @@ looping=1
 log=log_file.txt
 txs=txs.txt
 numberCompleted=0
+donationAddr=addr1qxh5mudsuqa86e5655e6g3m9chv234z5re0jfv7x3n38x0hduq5z7awms2hvxfsghtvchnc92xksnrn9yhuq0vjgss7s88mu6n
+paymentAddr="Insert payment address here"
+paymentSignKeyPath="Insert path to skey here"
+policySignKeyPath="Insert path to skey here"
+scriptPath="Insert path to script file here"
+profitAddress="Insert profit address here"
 echo "" >> $txs
 echo "" >> $log
 echo "Log File" >> $log
@@ -15,7 +21,7 @@ echo "" >> $log
 trap 'looping=0;wait' INT TERM
 
 while (( looping )); do
-    cardano-cli query utxo --address $(cat /root/cardano-my-node/corn/payment/payment.addr) --mainnet > fullUtxo.out
+    cardano-cli query utxo --address $paymentAddr --mainnet > fullUtxo.out
     tail -n +3 fullUtxo.out | sort -k3 -nr > balance.out
     cat balance.out
     while read -r utxo; do
@@ -31,14 +37,14 @@ while (( looping )); do
 	    break
 	else
 	    echo ${tx_hash} >> $txs
-	    echo $(curl -H 'project_id: 93I3CfhIitw2xf3jlplFSzF7NejSDOup' \
+	    echo $(curl -H 'project_id: INSERT HERE' \
                 https://cardano-mainnet.blockfrost.io/api/v0/txs/${tx_hash}/utxos \
                 | jq '.inputs' | jq '.[0]' | jq '.address') >> $log
-            in_addr=$(curl -H 'project_id: 93I3CfhIitw2xf3jlplFSzF7NejSDOup' \
+            in_addr=$(curl -H 'project_id: INSERT HERE' \
                 https://cardano-mainnet.blockfrost.io/api/v0/txs/${tx_hash}/utxos \
                 | jq '.inputs' | jq '.[0]' | jq '.address' | sed 's/^.//;s/.$//')
             echo "Address: ${in_addr}"
-            if [ ${utxo_balance} != 52000000 ] || [ $(ls "metadata/" | wc -l) == 0 ];
+            if [ ${utxo_balance} != 50000000 ] || [ $(ls "metadata/" | wc -l) == 0 ];
     	    then
 	        echo ${utxo_balance} >> $log
 	        echo "Refund Initiated" >> $log
@@ -67,7 +73,7 @@ while (( looping )); do
                     --invalid-hereafter $(( ${currentSlot} + 10000)) \
                     --out-file tx.raw >> $log
                 cardano-cli transaction sign \
-                    --signing-key-file /root/cardano-my-node/corn/payment/payment.skey \
+                    --signing-key-file $paymentSignKeyPath \
                     --tx-body-file tx.raw \
                     --out-file tx.signed \
                     --mainnet >> $log
@@ -75,19 +81,19 @@ while (( looping )); do
             else
 	        echo "Sending NFT" >> $log
          	numberCompleted=$(( numberCompleted+1 ))
-	        POLICYID=$(cardano-cli transaction policyid --script-file /root/cardano-my-node/corn/policy/cornPolicy.script)
+	        POLICYID=$(cardano-cli transaction policyid --script-file $scriptPath)
                 metadata_file=$(ls metadata/ | sort -R | tail -1)
                 name=$(echo ${metadata_file} | awk '{ print substr( $0, 1, length($0)-5 ) }')
-                amountToSendUser=2000000
-	        amountToSendMe=7500000
-	        amountToSendThem=42500000
+                amountToSendUser=1500000
+	        amountToDonate=5000000
+	        amountToSendProfit=43500000
                 currentSlot=$(cardano-cli query tip --mainnet | jq -r '.slot')
                 cardano-cli transaction build-raw \
                     --fee 0 \
                     ${tx_in} \
                     --tx-out ${in_addr}+${amountToSendUser}+"1 $POLICYID.${name}" \
-                    --tx-out addr1q94sacwhznhrxxuh83afzpyl32fja3h0s0yvpk9r5wkgjdu5y02gp5zmur275qw7q08ygeww6s2ulglxeu8ah64qapqs5mfkqh+${amountToSendThem} \
-		    --tx-out addr1qxh5mudsuqa86e5655e6g3m9chv234z5re0jfv7x3n38x0hduq5z7awms2hvxfsghtvchnc92xksnrn9yhuq0vjgss7s88mu6n+${amountToSendMe} \
+                    --tx-out ${profitAddr}+${amountToSendProfit} \
+		    --tx-out ${donationAddr}+${amountToDonate} \
 		    --mint="1 $POLICYID.${name}" \
 		    --metadata-json-file ./metadata/${metadata_file} \
                     --invalid-hereafter $(( ${currentSlot} + 10000)) \
@@ -106,21 +112,21 @@ while (( looping )); do
                     --fee ${fee} \
                     ${tx_in} \
                     --tx-out ${in_addr}+${amountToSendUser}+"1 $POLICYID.${name}" \
-                    --tx-out addr1q94sacwhznhrxxuh83afzpyl32fja3h0s0yvpk9r5wkgjdu5y02gp5zmur275qw7q08ygeww6s2ulglxeu8ah64qapqs5mfkqh+${amountToSendThem} \
-		    --tx-out addr1qxh5mudsuqa86e5655e6g3m9chv234z5re0jfv7x3n38x0hduq5z7awms2hvxfsghtvchnc92xksnrn9yhuq0vjgss7s88mu6n+${amountToSendMe} \
+                    --tx-out ${profitAddr}+${amountToSendProfit} \
+		    --tx-out ${donationAddr}+${amountToDonate} \
 		    --mint="1 $POLICYID.${name}" \
-		    --metadata-json-file /root/cardano-my-node/corn/metadata/${metadata_file} \
+		    --metadata-json-file ./metadata/${metadata_file} \
                     --invalid-hereafter $(( ${currentSlot} + 10000)) \
                     --out-file tx.raw >> $log
                 cardano-cli transaction sign \
-                    --signing-key-file /root/cardano-my-node/corn/payment/payment.skey \
-	            --signing-key-file /root/cardano-my-node/corn/policy/cornPolicy.skey \
-		    --script-file /root/cardano-my-node/corn/policy/cornPolicy.script \
+                    --signing-key-file $paymentSignKeyPath \
+	            --signing-key-file $policySignKeyPath \
+		    --script-file $scriptPath \
                     --tx-body-file tx.raw \
                     --out-file tx.signed \
                     --mainnet >> $log
                 cardano-cli transaction submit --tx-file tx.signed --mainnet >> $log
-	        rm /root/cardano-my-node/corn/metadata/${metadata_file}
+	        rm ./metadata/${metadata_file}
             fi
             rm tx.*
 	    echo "" >> $log
