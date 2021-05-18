@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd /root/cardano-my-node/Cardano-NFT-Auto-Mint/
 looping=1
 log=log_file.txt
 txs=txs.txt
