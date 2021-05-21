@@ -1,6 +1,6 @@
 # Cardano NFT Auto-Mint System
 
-*Disclaimer: This software is provided as-is with no warranty. I take no responsibility for lost funds due to improper use of this system.*
+*Disclaimer: This software is provided as-is with no warranty. I take no responsibility for lost funds while using this system.*
 
 ## What is this software?
 
@@ -9,7 +9,7 @@ This is an automated minting and distribution system for Cardano NFTs. It is des
 ## Requirements
 
 To use this software you will need:
-* A fully synced Cardano node using version 1.26.2 (v1.27.0 update coming soon)
+* A fully synced Cardano node using version 1.27.0
 * A linux (tested on Ubuntu) system/VPS
 * Basic knowledge of Cardano-CLI commands (although most commands will be explained)
 * Pre-created policy script and signing key.
