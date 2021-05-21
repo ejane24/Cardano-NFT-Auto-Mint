@@ -116,13 +116,13 @@ while (( looping )); do
                     --tx-out ${profitAddr}+${amountToSendProfit} \
 		    --tx-out ${donationAddr}+${amountToDonate} \
 		    --mint="1 $POLICYID.${name}" \
+                    --minting-script-file $scriptPath \
 		    --metadata-json-file ./metadata/${metadata_file} \
                     --invalid-hereafter $(( ${currentSlot} + 10000)) \
                     --out-file tx.raw >> $log
                 cardano-cli transaction sign \
                     --signing-key-file $paymentSignKeyPath \
 	            --signing-key-file $policySignKeyPath \
-		    --script-file $scriptPath \
                     --tx-body-file tx.raw \
                     --out-file tx.signed \
                     --mainnet >> $log
