@@ -10,7 +10,7 @@ paymentAddr="Insert payment address here"
 paymentSignKeyPath="Insert path to skey here"
 policySignKeyPath="Insert path to skey here"
 scriptPath="Insert path to script file here"
-profitAddress="Insert profit address here"
+profitAddr="Insert profit address here"
 echo "" >> $txs
 echo "" >> $log
 echo "Log File" >> $log
@@ -96,6 +96,7 @@ while (( looping )); do
                     --tx-out ${profitAddr}+${amountToSendProfit} \
 		    --tx-out ${donationAddr}+${amountToDonate} \
 		    --mint="1 $POLICYID.${name}" \
+		    --minting-script-file $scriptPath \
 		    --metadata-json-file ./metadata/${metadata_file} \
                     --invalid-hereafter $(( ${currentSlot} + 10000)) \
                     --out-file tx.tmp >> $log
