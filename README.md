@@ -1,3 +1,5 @@
+# DEPRECATED: This repo is no longer supported and will not be updated. For minting services please visit https://livemintnft.com
+
 # Cardano NFT Auto-Mint System
 
 *Disclaimer: This software is provided as-is with no warranty. I take no responsibility for lost funds while using this system.*
